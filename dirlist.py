@@ -4,20 +4,17 @@ from PyQt5.QtWidgets import QListWidget
 
 class DirList(QListWidget):
 
-    def __init__(self, parent, directory):
+    def __init__(self, parent):
         super(DirList, self).__init__()
         self.parent = parent
         self.setFixedWidth(200)
-
-        self.directory = directory
+        self.directory = os.getcwd()
         self.reload_entries()
         self.setCurrentRow(0)
 
     def reload_entries(self):
         entries = [entry.name for entry in os.scandir(self.directory)
-                   if entry.is_dir() or (
-                entry.is_file() and entry.name.endswith('.fits')
-                   )]
+                   if entry.is_dir() or (entry.is_file() and entry.name.endswith('.fits'))]
 
         self.clear()
         self.addItems(entries)

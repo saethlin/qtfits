@@ -14,8 +14,9 @@ class ImageDisplay(QLabel):
 
     def __init__(self, minimap):
         super(ImageDisplay, self).__init__()
-        self._refresh_queue = 0
+        self.minimap = minimap
 
+        self._refresh_queue = 0
         self._image = None
         self._black = None
         self._white = None
@@ -27,8 +28,6 @@ class ImageDisplay(QLabel):
         self.timer.timeout.connect(self.refresh_display)
 
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
-
-        self.minimap = minimap
 
     @property
     def image(self):
@@ -114,9 +113,6 @@ class ImageDisplay(QLabel):
 
         else:
             self._refresh_queue = max(self._refresh_queue, stage)
-
-    def keyPressEvent(self, event):
-        self.parent().keyPressEvent(event)
 
     def mousePressEvent(self, event):
         self.last_x = event.x()
