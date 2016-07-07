@@ -7,14 +7,14 @@ Toolbar?
 import re
 import numpy as np
 from astropy.io import fits
-from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication, QPlainTextEdit
+from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication, QFileDialog
 from PyQt5.QtCore import Qt
 
 from dirlist import DirList
 from histogram import ImageHistogram
 from imagedisplay import ImageDisplay
 from minimap import MiniMap
-from headerdsiplay import HeaderDisplay
+from headerdisplay import HeaderDisplay
 
 
 class QtFits(QWidget):
@@ -51,6 +51,7 @@ class QtFits(QWidget):
         self.handlers[Qt.Key_Backspace] = self.box.back
         self.handlers[Qt.Key_Left] = self.box.back
         self.handlers[Qt.Key_H] = self.show_header
+        self.handlers[Qt.Key_O] = self.open_dialog
 
         self.open('test.fits')
 
@@ -62,6 +63,12 @@ class QtFits(QWidget):
         self.histogram.image = image
         header_text = str(hdu.header).strip()
         self.header = re.sub("(.{80})", "\\1\n", header_text, 0, re.DOTALL).strip()
+
+    def open_dialog(self):
+        if QApplication.keyboardModifiers() == Qt.ControlModifier:
+            fname = QFileDialog.getOpenFileName(self, 'Open file', '.')
+            if fname[0]:
+                self.open(fname[0])
 
     def show_header(self):
         window = HeaderDisplay(self.header)
