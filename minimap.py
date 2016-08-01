@@ -41,6 +41,12 @@ class MiniMap(QLabel):
         right = scale * (x + width)
         if right > MiniMap.SIZE:
             right = MiniMap.SIZE
+
+        top = round(int(top))
+        bot = round(int(bot))
+        left = round(int(left))
+        right = round(int(right))
+
         stack[top, left:right, 1] = 255
         stack[bot - 1, left:right, 1] = 255
         stack[top:bot, left, 1] = 255
