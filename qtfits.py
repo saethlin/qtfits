@@ -1,9 +1,10 @@
-"""
-TODO:
-Histogram sliders
-Header display
-Toolbar?
-"""
+# TODO: Cursor position and value display
+# TODO: View change by clicking on minimap
+# TODO: Histogram sliders
+# TODO: Header display
+# TODO: Toolbar?
+
+import sys
 import re
 import numpy as np
 from astropy.io import fits
@@ -22,6 +23,7 @@ class QtFits(QWidget):
     def __init__(self):
         super(QtFits, self).__init__()
 
+        self.header = None
         self.setWindowTitle('QtFits')
         self.resize(800, 500)
 
@@ -40,28 +42,33 @@ class QtFits(QWidget):
         self.histogram = ImageHistogram(self.main)
         grid.addWidget(self.histogram, 2, 0)
 
-        self.handlers = dict()
-        self.handlers[Qt.Key_Escape] = self.close
-        self.handlers[Qt.Key_Equal] = self.main.increase_zoom
-        self.handlers[Qt.Key_Minus] = self.main.decrease_zoom
-        self.handlers[Qt.Key_Down] = self.box.selection_down
-        self.handlers[Qt.Key_Up] = self.box.selection_up
-        self.handlers[Qt.Key_Return] = self.box.select
-        self.handlers[Qt.Key_Right] = self.box.select
-        self.handlers[Qt.Key_Backspace] = self.box.back
-        self.handlers[Qt.Key_Left] = self.box.back
-        self.handlers[Qt.Key_H] = self.show_header
-        self.handlers[Qt.Key_O] = self.open_dialog
+        self.handlers = {
+            Qt.Key_Escape: self.close,
+            Qt.Key_Equal: self.main.increase_zoom,
+            Qt.Key_Minus: self.main.decrease_zoom,
+            Qt.Key_Down: self.box.selection_down,
+            Qt.Key_Up: self.box.selection_up,
+            Qt.Key_Return: self.box.select,
+            Qt.Key_Right: self.box.select,
+            Qt.Key_Backspace: self.box.back,
+            Qt.Key_Left: self.box.back,
+            Qt.Key_H: self.show_header,
+            Qt.Key_O: self.open_dialog
+        }
 
-        self.open('test.fits')
+        self.open(sys.argv[1])
 
-    def open(self, path, hdu=0):
+    def open(self, path, hdu=None):
         with open(path, 'rb') as input_file:
-            hdu = fits.open(input_file)[hdu]
-            image = hdu.data.astype(np.float32)
+            hdulist = fits.open(input_file)
+            if hdu is None:
+                hdu = 0
+                while hdulist[hdu].data is None:
+                    hdu += 1
+            image = hdulist[hdu].data.astype(np.float32)
         self.main.image = image
         self.histogram.image = image
-        header_text = str(hdu.header).strip()
+        header_text = str(hdulist[hdu].header).strip()
         self.header = re.sub("(.{80})", "\\1\n", header_text, 0, re.DOTALL).strip()
 
     def open_dialog(self):
@@ -71,8 +78,8 @@ class QtFits(QWidget):
                 self.open(fname[0])
 
     def show_header(self):
-        window = HeaderDisplay(self.header)
-        window.exec_()
+        header_window = HeaderDisplay(self.header)
+        header_window.exec_()
 
     def keyPressEvent(self, event):
         if event.key() in self.handlers:
