@@ -69,8 +69,7 @@ class QtFits(QWidget):
                     hdu += 1
             image = hdulist[hdu].data.astype(np.float32)
         self.main.image = image
-        header_text = str(hdulist[hdu].header).strip()
-        self.header = re.sub("(.{80})", "\\1\n", header_text, 0, re.DOTALL).strip()
+        self.header = str(hdulist[hdu].header).strip()
 
     def open_dialog(self):
         if QApplication.keyboardModifiers() == Qt.ControlModifier:
@@ -80,6 +79,7 @@ class QtFits(QWidget):
 
     def show_header(self):
         header_window = HeaderDisplay(self.header)
+        header_window.show()
         header_window.exec_()
 
     def keyPressEvent(self, event):
