@@ -70,7 +70,7 @@ class ImageDisplay(QLabel):
 
     @view_y.setter
     def view_y(self, new):
-        new = max(self.height()/2*self.zoom, new)
+        new = max(self.height()/2, new)
         new = min(new, self.zoom*self.image.shape[0] - self.height()/2)
         self._view_y = int(round(new))
 
@@ -80,7 +80,7 @@ class ImageDisplay(QLabel):
 
     @view_x.setter
     def view_x(self, new):
-        new = max(self.width()/2*self.zoom, new)
+        new = max(self.width()/2, new)
         new = min(new, self.zoom*self.image.shape[1]-self.width()/2)
         self._view_x = int(round(new))
 
@@ -115,8 +115,11 @@ class ImageDisplay(QLabel):
                     self.zoomed = zoom(self.scaled, self.zoom)
 
             if stage >= ImageDisplay.SLICE:
-                self.sliced = self.zoomed[self.view_y-self.height()//2: self.view_y+self.height()//2,
-                                          self.view_x-self.width()//2: self.view_x+self.width()//2]
+                slice_y = slice(max(0, self.view_y-self.height()//2),
+                                min(self.image.shape[0]*self.zoom, self.view_y+self.height()//2))
+                slice_x = slice(max(0, self.view_x-self.width()//2),
+                                min(self.image.shape[1]*self.zoom, self.view_x+self.width()//2))
+                self.sliced = self.zoomed[slice_y, slice_x]
 
             height, width = self.sliced.shape
             image = QImage(bytes(self.sliced.data), width, height, width, QImage.Format_Grayscale8)
@@ -146,3 +149,6 @@ class ImageDisplay(QLabel):
         moved = (last_ypos != self.view_y) or (last_xpos != self.view_x)
         if moved:
             self.refresh_display(ImageDisplay.SLICE)
+
+    def resizeEvent(self, event):
+        self.refresh_display(ImageDisplay.SLICE)

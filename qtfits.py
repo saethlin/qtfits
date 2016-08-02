@@ -85,8 +85,11 @@ class QtFits(QWidget):
         if event.key() in self.handlers:
             self.handlers[event.key()]()
 
-    def resizeEvent(self, event):
-        self.main.refresh_display(ImageDisplay.SLICE)
+    def wheelEvent(self, event):
+        if event.angleDelta().y() > 0:
+            self.main.increase_zoom()
+        elif event.angleDelta().y() < 0:
+            self.main.decrease_zoom()
 
 
 if __name__ == '__main__':
