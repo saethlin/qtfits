@@ -34,7 +34,7 @@ class ImageHistogram(QLabel):
         self._image = new
         screen_width = QDesktopWidget().screenGeometry().width()
 
-        data = np.log(new.ravel())
+        data = new.ravel()
         self.lower_bound, self.upper_bound = np.percentile(data[::100], [0.01, 99.95])
         self.span = self.upper_bound - self.lower_bound
         data = data[(data >= self.lower_bound) & (data <= self.upper_bound)]
