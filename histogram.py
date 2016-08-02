@@ -1,19 +1,18 @@
 import numpy as np
 from PyQt5.QtWidgets import QLabel, QDesktopWidget, QSizePolicy
-from PyQt5.QtGui import QImage, QPixmap, QPainter, QPolygon, QBrush
-from PyQt5.QtCore import Qt, QTimer, QPoint
+from PyQt5.QtGui import QImage, QPixmap, QPainter
+from PyQt5.QtCore import Qt, QTimer
 
 from resources import zoom
-import time
 
 
 class ImageHistogram(QLabel):
 
     HEIGHT = 50
 
-    def __init__(self, parent):
+    def __init__(self):
         super(ImageHistogram, self).__init__()
-        self.parent = parent
+        self.main = None
         self._image = None
         self.plot = None
         self.clicked = None
@@ -37,7 +36,7 @@ class ImageHistogram(QLabel):
 
         data = new.ravel()
         self.lower_bound, self.upper_bound = np.percentile(data[::100], [0.01, 99.95])
-        data = data[(data > self.lower_bound) & (data < self.upper_bound)]
+        data = data[(data >= self.lower_bound) & (data <= self.upper_bound)]
 
         # Rescale data
         data -= data.min()
@@ -70,18 +69,10 @@ class ImageHistogram(QLabel):
     def draw_sliders(self):
         pixmap = QPixmap(self.qimage)
         self.painter.begin(pixmap)
-        self.painter.setBrush(Qt.red)
         self.painter.setPen(Qt.red)
 
-        self.black = (self.parent.black - self.lower_bound) / (self.upper_bound - self.lower_bound) * self.width()
-        self.white = (self.parent.white - self.lower_bound) / (self.upper_bound - self.lower_bound) * self.width()
-
-        #points = [QPoint(self.black-5, self.height()),
-        #          QPoint(self.black+5, self.height()),
-        #          QPoint(self.black, self.height()-10)]
-        #triangle = QPolygon(points)
-
-        #self.painter.drawConvexPolygon(triangle)
+        self.black = (self.main.black - self.lower_bound) / (self.upper_bound - self.lower_bound) * self.width()
+        self.white = (self.main.white - self.lower_bound) / (self.upper_bound - self.lower_bound) * self.width()
 
         self.painter.drawLine(self.black, 0, self.black, self.height())
         self.painter.drawLine(self.white, 0, self.white, self.height())
@@ -105,8 +96,8 @@ class ImageHistogram(QLabel):
 
     def mouseMoveEvent(self, event):
         if self.clicked == 'black':
-            self.parent.black = (event.x() / self.width() * (self.upper_bound - self.lower_bound)) + self.lower_bound
+            self.main.black = (event.x() / self.width() * (self.upper_bound - self.lower_bound)) + self.lower_bound
             self.draw_sliders()
         elif self.clicked == 'white':
-            self.parent.white = (event.x() / self.width() * (self.upper_bound - self.lower_bound)) + self.lower_bound
+            self.main.white = (event.x() / self.width() * (self.upper_bound - self.lower_bound)) + self.lower_bound
             self.draw_sliders()
