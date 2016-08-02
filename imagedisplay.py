@@ -146,6 +146,3 @@ class ImageDisplay(QLabel):
         moved = (last_ypos != self.view_y) or (last_xpos != self.view_x)
         if moved:
             self.refresh_display(ImageDisplay.SLICE)
-
-    def resizeEvent(self, event):
-        print(event.size())
