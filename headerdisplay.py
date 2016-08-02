@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QPlainTextEdit, QDialog, QVBoxLayout, QLineEdit
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 
+
 class HeaderDisplay(QDialog):
 
     def __init__(self, header):

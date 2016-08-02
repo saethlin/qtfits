@@ -48,10 +48,10 @@ class MiniMap(QLabel):
         left = scale * (self.main.view_x - self.main.width()/2)
         right = scale * (self.main.view_x + self.main.width()/2)
 
-        top = round(int(top))
-        bot = round(int(bot))-1
-        left = round(int(left))
-        right = round(int(right))-1
+        top = int(round(top))
+        bot = int(round(bot))-1
+        left = int(round(left))
+        right = int(round(right))-1
 
         self.painter.drawLine(left, top, right, top)
         self.painter.drawLine(right, top, right, bot)
