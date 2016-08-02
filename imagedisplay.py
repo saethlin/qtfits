@@ -12,15 +12,15 @@ class ImageDisplay(QLabel):
     ZOOM = 2
     SLICE = 1
 
-    def __init__(self, minimap):
+    def __init__(self):
         super(ImageDisplay, self).__init__()
-        self.minimap = minimap
-
-        self._refresh_queue = 0
+        self.minimap = None
         self._image = None
         self._black = None
         self._white = None
+        self._refresh_queue = 0
         self.zoom = 1
+        self._view_x = self._view_y = 0
 
         self.timer = QTimer(self)
         self.timer.setInterval(int(1/60*1000))
@@ -28,6 +28,8 @@ class ImageDisplay(QLabel):
         self.timer.timeout.connect(self.refresh_display)
 
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+
+        self._image = np.zeros((800, 500))
 
     @property
     def image(self):
@@ -38,9 +40,10 @@ class ImageDisplay(QLabel):
         self._image = new
         self._black = np.median(new)
         self._white = np.percentile(self._image, 99.7)
-        self.view_y = 0
-        self.view_x = 0
+        self.view_y = self.image.shape[0]//2
+        self.view_x = self.image.shape[1]//2
         self.minimap.image = new
+        self.histogram.image = new
         self.refresh_display(ImageDisplay.CLIP)
 
     @property
@@ -61,24 +64,38 @@ class ImageDisplay(QLabel):
         self._white = new
         self.refresh_display(ImageDisplay.CLIP)
 
+    @property
+    def view_y(self):
+        return self._view_y
+
+    @view_y.setter
+    def view_y(self, new):
+        new = max(self.height()/2*self.zoom, new)
+        new = min(new, self.zoom*self.image.shape[0] - self.height()/2)
+        self._view_y = int(round(new))
+
+    @property
+    def view_x(self):
+        return self._view_x
+
+    @view_x.setter
+    def view_x(self, new):
+        new = max(self.width()/2*self.zoom, new)
+        new = min(new, self.zoom*self.image.shape[1]-self.width()/2)
+        self._view_x = int(round(new))
+
     def increase_zoom(self):
-        if self.zoom < 4:
+        if self.zoom < 8:
             self.zoom *= 2
+            self.view_x *= 2
+            self.view_y *= 2
             self.refresh_display(ImageDisplay.ZOOM)
 
     def decrease_zoom(self):
         if self.zoom > 0.125:
             self.zoom /= 2
-            if self.view_y + self.height() > self.image.shape[0] * self.zoom:
-                self.view_y = self.image.shape[0] * self.zoom - self.height()
-            if self.view_x + self.width() > self.image.shape[1] * self.zoom:
-                self.view_x = self.image.shape[1] * self.zoom - self.width()
-
-            if self.view_x < 0:
-                self.view_x = 0
-            if self.view_y < 0:
-                self.view_y = 0
-
+            self.view_x /= 2
+            self.view_y /= 2
             self.refresh_display(ImageDisplay.ZOOM)
 
     def refresh_display(self, stage=-1):
@@ -93,20 +110,20 @@ class ImageDisplay(QLabel):
                 clipped = (self.image - self.black).clip(0, self.white-self.black)
                 self.scaled = (clipped/clipped.max()*255).astype(np.uint8)
                 self.minimap.reclip(self.black, self.white)
+
             if stage >= ImageDisplay.ZOOM:
-                if self.zoom >= 1:
                     self.zoomed = zoom(self.scaled, self.zoom)
-                else:
-                    self.zoomed = zoom(self.scaled, self.zoom)
+
             if stage >= ImageDisplay.SLICE:
-                self.sliced = self.zoomed[self.view_y:self.height()+self.view_y, self.view_x:self.width()+self.view_x]
+                self.sliced = self.zoomed[self.view_y-self.height()//2: self.view_y+self.height()//2,
+                                          self.view_x-self.width()//2: self.view_x+self.width()//2]
 
             height, width = self.sliced.shape
             image = QImage(bytes(self.sliced.data), width, height, width, QImage.Format_Grayscale8)
             pixmap = QPixmap(image)
             self.setPixmap(pixmap)
 
-            self.minimap.refresh(self.view_y, self.view_x, self.height(), self.width(), self.zoom)
+            self.minimap.refresh()
 
             self._refresh_queue = -1
             self.timer.start()
@@ -126,16 +143,9 @@ class ImageDisplay(QLabel):
         self.last_y = event.y()
         self.last_x = event.x()
 
-        if self.view_y + self.height() > self.image.shape[0]*self.zoom:
-            self.view_y = self.image.shape[0]*self.zoom - self.height()
-        if self.image.shape[1]*self.zoom - self.view_x < self.width():
-            self.view_x = self.image.shape[1]*self.zoom - self.width()
-
-        if self.view_y < 0:
-            self.view_y = 0
-        if self.view_x < 0:
-            self.view_x = 0
-
         moved = (last_ypos != self.view_y) or (last_xpos != self.view_x)
         if moved:
             self.refresh_display(ImageDisplay.SLICE)
+
+    def resizeEvent(self, event):
+        print(event.size())

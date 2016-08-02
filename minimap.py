@@ -1,7 +1,9 @@
 import numpy as np
 from PyQt5.QtWidgets import QLabel, QSizePolicy
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtGui import QImage, QPixmap, QPainter, QPolygon
+from PyQt5.QtCore import Qt, QPoint
 
+from imagedisplay import ImageDisplay
 from resources import zoom
 
 
@@ -11,9 +13,11 @@ class MiniMap(QLabel):
 
     def __init__(self):
         super(MiniMap, self).__init__()
+        self.main = None
         self.conversion = None
         self._image = None
         self.scaled = None
+        self.painter = QPainter()
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
 
     @property
@@ -27,31 +31,40 @@ class MiniMap(QLabel):
 
     def reclip(self, black, white):
         clipped = (self.image - black).clip(0, white - black)
-        self.scaled = (clipped / clipped.max() * 255).astype(np.uint8)
+        scaled = (clipped / clipped.max() * 255).astype(np.uint8)
+        height, width = scaled.shape
+        self.qimage = QImage(bytes(scaled.data), width, height, width, QImage.Format_Grayscale8)
 
-    def refresh(self, y, x, height, width, zoom):
-        stack = np.dstack((self.scaled,) * 3)
-        scale = self.conversion / zoom
+    def refresh(self):
+        pixmap = QPixmap(self.qimage)
+        self.painter.begin(pixmap)
+        self.painter.setBrush(Qt.red)
+        self.painter.setPen(Qt.red)
 
-        top = scale * y
-        bot = scale * (y + height)
-        if bot > MiniMap.SIZE:
-            bot = MiniMap.SIZE
-        left = scale * x
-        right = scale * (x + width)
-        if right > MiniMap.SIZE:
-            right = MiniMap.SIZE
+        scale = self.conversion / self.main.zoom
+
+        top = scale * (self.main.view_y - self.main.height()/2)
+        bot = scale * (self.main.view_y + self.main.height()/2)
+        left = scale * (self.main.view_x - self.main.width()/2)
+        right = scale * (self.main.view_x + self.main.width()/2)
 
         top = round(int(top))
-        bot = round(int(bot))
+        bot = round(int(bot))-1
         left = round(int(left))
-        right = round(int(right))
+        right = round(int(right))-1
 
-        stack[top, left:right, 1] = 255
-        stack[bot - 1, left:right, 1] = 255
-        stack[top:bot, left, 1] = 255
-        stack[top:bot, right - 1, 1] = 255
+        self.painter.drawLine(left, top, right, top)
+        self.painter.drawLine(right, top, right, bot)
+        self.painter.drawLine(right, bot, left, bot)
+        self.painter.drawLine(left, bot, left, top)
 
-        height, width, channels = stack.shape
-        image = QImage(bytes(stack.data), width, height, 3 * width, QImage.Format_RGB888)
-        self.setPixmap(QPixmap(image))
+        self.setPixmap(pixmap)
+        self.painter.end()
+
+    def mousePressEvent(self, event):
+        self.main.view_x = event.x()/self.conversion*self.main.zoom
+        self.main.view_y = event.y()/self.conversion*self.main.zoom
+        self.main.refresh_display(ImageDisplay.CLIP)
+
+    def mouseMoveEvent(self, event):
+        self.mousePressEvent(event)

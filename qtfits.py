@@ -1,11 +1,9 @@
 # TODO: Cursor position and value display
-# TODO: View change by clicking on minimap
-# TODO: Histogram sliders
 # TODO: Header display
 # TODO: Toolbar?
 
-import sys
 import re
+import argparse
 import numpy as np
 from astropy.io import fits
 from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication, QFileDialog
@@ -30,17 +28,23 @@ class QtFits(QWidget):
         grid = QGridLayout()
         self.setLayout(grid)
 
-        self.mini = MiniMap()
-        grid.addWidget(self.mini, 0, 1)
+        self.minimap = MiniMap()
+        grid.addWidget(self.minimap, 0, 1)
 
-        self.main = ImageDisplay(self.mini)
+        self.main = ImageDisplay()
         grid.addWidget(self.main, 0, 0, 2, 1)
 
         self.box = DirList(self)
         grid.addWidget(self.box, 1, 1, 2, 1)
 
-        self.histogram = ImageHistogram(self.main)
+        self.histogram = ImageHistogram()
         grid.addWidget(self.histogram, 2, 0)
+
+        self.main.histogram = self.histogram
+        self.histogram.main = self.main
+
+        self.minimap.main = self.main
+        self.main.minimap = self.minimap
 
         self.handlers = {
             Qt.Key_Escape: self.close,
@@ -56,8 +60,6 @@ class QtFits(QWidget):
             Qt.Key_O: self.open_dialog
         }
 
-        self.open(sys.argv[1])
-
     def open(self, path, hdu=None):
         with open(path, 'rb') as input_file:
             hdulist = fits.open(input_file)
@@ -67,15 +69,14 @@ class QtFits(QWidget):
                     hdu += 1
             image = hdulist[hdu].data.astype(np.float32)
         self.main.image = image
-        self.histogram.image = image
         header_text = str(hdulist[hdu].header).strip()
         self.header = re.sub("(.{80})", "\\1\n", header_text, 0, re.DOTALL).strip()
 
     def open_dialog(self):
         if QApplication.keyboardModifiers() == Qt.ControlModifier:
-            fname = QFileDialog.getOpenFileName(self, 'Open file', '.')
-            if fname[0]:
-                self.open(fname[0])
+            filename = QFileDialog.getOpenFileName(self, 'Open file', '.')
+            if filename[0]:
+                self.open(filename[0])
 
     def show_header(self):
         header_window = HeaderDisplay(self.header)
@@ -83,16 +84,22 @@ class QtFits(QWidget):
 
     def keyPressEvent(self, event):
         if event.key() in self.handlers:
-            handler = self.handlers[event.key()]
-            handler()
+            self.handlers[event.key()]()
 
     def resizeEvent(self, event):
         self.main.refresh_display(ImageDisplay.SLICE)
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Display a fits file')
+    parser.add_argument('filename', help='path to or name of file to open', nargs='?')
+    args = parser.parse_args()
     app = QApplication([])
     app.setStyle('Fusion')
     window = QtFits()
+    if args.filename is not None:
+        window.open(args.filename)
+    else:
+        window.main.image = np.random.rand(1024, 1024).astype(np.float32)
     window.show()
     app.exec_()
