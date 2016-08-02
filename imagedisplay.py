@@ -1,7 +1,7 @@
 import numpy as np
 from PyQt5.QtWidgets import QLabel, QSizePolicy
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import Qt, QTimer
 
 from resources import zoom
 
@@ -28,6 +28,7 @@ class ImageDisplay(QLabel):
         self.timer.timeout.connect(self.refresh_display)
 
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.setMouseTracking(True)
 
         self._image = np.zeros((800, 500))
 
@@ -135,20 +136,27 @@ class ImageDisplay(QLabel):
             self._refresh_queue = max(self._refresh_queue, stage)
 
     def mousePressEvent(self, event):
-        self.last_x = event.x()
-        self.last_y = event.y()
+        if event.buttons() == Qt.LeftButton:
+            self.last_x = event.x()
+            self.last_y = event.y()
 
     def mouseMoveEvent(self, event):
-        last_ypos = self.view_y
-        last_xpos = self.view_x
-        self.view_y += (self.last_y-event.y())
-        self.view_x += (self.last_x-event.x())
-        self.last_y = event.y()
-        self.last_x = event.x()
 
-        moved = (last_ypos != self.view_y) or (last_xpos != self.view_x)
-        if moved:
-            self.refresh_display(ImageDisplay.SLICE)
+        cursor_y = event.y()/self.zoom + (self.view_y-self.height()/2)/self.zoom
+        cursor_x = event.x()/self.zoom + (self.view_x-self.width()/2)/self.zoom
+        cursor_y = int(cursor_y)
+        cursor_x = int(cursor_x)
 
-    def resizeEvent(self, event):
-        self.refresh_display(ImageDisplay.SLICE)
+        self.cursordisplay.set(x=cursor_x, y=cursor_y, value=self.image[cursor_y, cursor_x])
+
+        if event.buttons() == Qt.LeftButton:
+            last_ypos = self.view_y
+            last_xpos = self.view_x
+            self.view_y += (self.last_y-event.y())
+            self.view_x += (self.last_x-event.x())
+            self.last_y = event.y()
+            self.last_x = event.x()
+
+            moved = (last_ypos != self.view_y) or (last_xpos != self.view_x)
+            if moved:
+                self.refresh_display(ImageDisplay.SLICE)

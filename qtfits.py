@@ -1,4 +1,3 @@
-# TODO: Cursor position and value display
 # TODO: Look into plotting a histogram of arcsinh rescaled values
 # TODO: Toolbar?
 
@@ -13,6 +12,7 @@ from histogram import ImageHistogram
 from imagedisplay import ImageDisplay
 from minimap import MiniMap
 from headerdisplay import HeaderDisplay
+from cursordisplay import CursorDisplay
 
 
 class QtFits(QWidget):
@@ -28,22 +28,27 @@ class QtFits(QWidget):
         self.setLayout(grid)
 
         self.minimap = MiniMap()
-        grid.addWidget(self.minimap, 0, 1)
+        grid.addWidget(self.minimap, 0, 1, 1, 1)
 
         self.main = ImageDisplay()
-        grid.addWidget(self.main, 0, 0, 2, 1)
+        grid.addWidget(self.main, 0, 0, 3, 1)
+
+        self.cursordisplay = CursorDisplay()
+        grid.addWidget(self.cursordisplay, 1, 1, 1, 1)
 
         self.box = DirList(self)
-        grid.addWidget(self.box, 1, 1, 2, 1)
+        grid.addWidget(self.box, 2, 1, 2, 1)
 
         self.histogram = ImageHistogram()
-        grid.addWidget(self.histogram, 2, 0)
+        grid.addWidget(self.histogram, 3, 0, 1, 1)
 
         self.main.histogram = self.histogram
         self.histogram.main = self.main
 
         self.minimap.main = self.main
         self.main.minimap = self.minimap
+
+        self.main.cursordisplay = self.cursordisplay
 
         self.handlers = {
             Qt.Key_Escape: self.close,
@@ -90,6 +95,9 @@ class QtFits(QWidget):
             self.main.increase_zoom()
         elif event.angleDelta().y() < 0:
             self.main.decrease_zoom()
+
+    def resizeEvent(self, event):
+        self.main.refresh_display(ImageDisplay.SLICE)
 
 
 if __name__ == '__main__':
