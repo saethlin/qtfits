@@ -19,7 +19,6 @@ class ImageHistogram(QLabel):
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
         self.painter = QPainter()
 
-        self._refresh_queue = False
         self.timer = QTimer(self)
         self.timer.setInterval(int(1/60*1000))
         self.timer.setSingleShot(True)
@@ -74,17 +73,15 @@ class ImageHistogram(QLabel):
         self.setPixmap(pixmap)
 
     def resizeEvent(self, event):
-        self._refresh_queue = True
         if self.timer.remainingTime() == -1:
             self.resizer()
             self.timer.start()
 
     def resizer(self):
-        if self._refresh_queue:
-            resized = zoom(self.histogram_image, 1, self.width()/self.histogram_image.shape[1])
-            height, width = resized.shape
-            self.qimage = QImage(bytes(resized), width, height, width, QImage.Format_Grayscale8)
-            self.draw_sliders()
+        resized = zoom(self.histogram_image, 1, self.width()/self.histogram_image.shape[1])
+        height, width = resized.shape
+        self.qimage = QImage(bytes(resized), width, height, width, QImage.Format_Grayscale8)
+        self.draw_sliders()
 
     def mousePressEvent(self, event):
         if abs(event.x() - self.black) < 4:
