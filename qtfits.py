@@ -1,5 +1,5 @@
 # TODO: Cursor position and value display
-# TODO: Header display
+# TODO: Look into plotting a histogram of arcsinh rescaled values
 # TODO: Toolbar?
 
 import re

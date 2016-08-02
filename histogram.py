@@ -34,8 +34,9 @@ class ImageHistogram(QLabel):
         self._image = new
         screen_width = QDesktopWidget().screenGeometry().width()
 
-        data = new.ravel()
+        data = np.log(new.ravel())
         self.lower_bound, self.upper_bound = np.percentile(data[::100], [0.01, 99.95])
+        self.span = self.upper_bound - self.lower_bound
         data = data[(data >= self.lower_bound) & (data <= self.upper_bound)]
 
         # Rescale data
@@ -59,20 +60,13 @@ class ImageHistogram(QLabel):
 
         self.histogram_image = (histogram * 255).astype(np.uint8)
 
-    def resizer(self):
-        if self._refresh_queue:
-            resized = zoom(self.histogram_image, 1, self.width()/self.histogram_image.shape[1])
-            height, width = resized.shape
-            self.qimage = QImage(bytes(resized), width, height, width, QImage.Format_Grayscale8)
-            self.draw_sliders()
-
     def draw_sliders(self):
         pixmap = QPixmap(self.qimage)
         self.painter.begin(pixmap)
         self.painter.setPen(Qt.red)
 
-        self.black = (self.main.black - self.lower_bound) / (self.upper_bound - self.lower_bound) * self.width()
-        self.white = (self.main.white - self.lower_bound) / (self.upper_bound - self.lower_bound) * self.width()
+        self.black = (self.main.black - self.lower_bound) / self.span * self.width()
+        self.white = (self.main.white - self.lower_bound) / self.span * self.width()
 
         self.painter.drawLine(self.black, 0, self.black, self.height())
         self.painter.drawLine(self.white, 0, self.white, self.height())
@@ -85,6 +79,13 @@ class ImageHistogram(QLabel):
             self.resizer()
             self.timer.start()
 
+    def resizer(self):
+        if self._refresh_queue:
+            resized = zoom(self.histogram_image, 1, self.width()/self.histogram_image.shape[1])
+            height, width = resized.shape
+            self.qimage = QImage(bytes(resized), width, height, width, QImage.Format_Grayscale8)
+            self.draw_sliders()
+
     def mousePressEvent(self, event):
         if abs(event.x() - self.black) < 4:
             self.clicked = 'black'
@@ -96,8 +97,14 @@ class ImageHistogram(QLabel):
 
     def mouseMoveEvent(self, event):
         if self.clicked == 'black':
-            self.main.black = (event.x() / self.width() * (self.upper_bound - self.lower_bound)) + self.lower_bound
-            self.draw_sliders()
+            new_black = (event.x() / self.width() * self.span) + self.lower_bound
+            new_black = max(new_black, self.lower_bound)
+            if new_black != self.main.black:
+                self.main.black = new_black
+                self.draw_sliders()
         elif self.clicked == 'white':
-            self.main.white = (event.x() / self.width() * (self.upper_bound - self.lower_bound)) + self.lower_bound
-            self.draw_sliders()
+            new_white = (event.x() / self.width() * self.span) + self.lower_bound
+            new_white = min(new_white, self.upper_bound - self.span/self.width())
+            if new_white != self.main.white:
+                self.main.white = new_white
+                self.draw_sliders()
