@@ -2,7 +2,6 @@
 # TODO: Look into plotting a histogram of arcsinh rescaled values
 # TODO: Toolbar?
 
-import re
 import argparse
 import numpy as np
 from astropy.io import fits
