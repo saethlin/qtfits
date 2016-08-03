@@ -16,13 +16,16 @@ class ImageHistogram(QLabel):
         self._image = None
         self.plot = None
         self.clicked = None
-        self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
         self.painter = QPainter()
+        self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+        self.setFocusPolicy(Qt.ClickFocus)
 
         self.timer = QTimer(self)
         self.timer.setInterval(int(1/60*1000))
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.resizer)
+
+
 
     @property
     def image(self):

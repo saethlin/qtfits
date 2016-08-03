@@ -36,11 +36,13 @@ class QtFits(QWidget):
         self.cursordisplay = CursorDisplay()
         grid.addWidget(self.cursordisplay, 1, 1, 1, 1)
 
-        self.box = DirList(self)
+        self.box = DirList()
         grid.addWidget(self.box, 2, 1, 2, 1)
 
         self.histogram = ImageHistogram()
         grid.addWidget(self.histogram, 3, 0, 1, 1)
+
+        self.box.main = self.main
 
         self.main.histogram = self.histogram
         self.histogram.main = self.main
@@ -63,6 +65,8 @@ class QtFits(QWidget):
             Qt.Key_H: self.show_header,
             Qt.Key_O: self.open_dialog
         }
+
+        self.setFocusPolicy(Qt.ClickFocus)
 
     def open(self, path, hdu=None):
         with open(path, 'rb') as input_file:
@@ -89,12 +93,6 @@ class QtFits(QWidget):
     def keyPressEvent(self, event):
         if event.key() in self.handlers:
             self.handlers[event.key()]()
-
-    def wheelEvent(self, event):
-        if event.angleDelta().y() > 0:
-            self.main.increase_zoom()
-        elif event.angleDelta().y() < 0:
-            self.main.decrease_zoom()
 
     def resizeEvent(self, event):
         self.main.refresh_display(ImageDisplay.SLICE)

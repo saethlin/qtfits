@@ -9,8 +9,8 @@ class HeaderDisplay(QDialog):
     def __init__(self, header):
         super().__init__()
         self.layout = QVBoxLayout(self)
-        self.setMinimumWidth(630)
-        self.resize(630, 500)
+        self.setMinimumWidth(750)
+        self.resize(750, 500)
         self.setWindowTitle('Header display')
 
         self.cards = [header[start:start+80] for start in range(0, len(header), 80)]

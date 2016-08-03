@@ -68,3 +68,9 @@ class MiniMap(QLabel):
 
     def mouseMoveEvent(self, event):
         self.mousePressEvent(event)
+
+    def wheelEvent(self, event):
+        if event.angleDelta().y() > 0:
+            self.main.increase_zoom()
+        elif event.angleDelta().y() < 0:
+            self.main.decrease_zoom()
