@@ -117,9 +117,9 @@ class ImageDisplay(QLabel):
 
             if stage >= ImageDisplay.SLICE:
                 slice_y = slice(max(0, self.view_y-self.height()//2),
-                                min(self.image.shape[0]*self.zoom, self.view_y+self.height()//2))
+                                min(int(round(self.image.shape[0]*self.zoom)), self.view_y+self.height()//2))
                 slice_x = slice(max(0, self.view_x-self.width()//2),
-                                min(self.image.shape[1]*self.zoom, self.view_x+self.width()//2))
+                                min(int(round(self.image.shape[1]*self.zoom)), self.view_x+self.width()//2))
                 self.sliced = self.zoomed[slice_y, slice_x]
 
             height, width = self.sliced.shape
@@ -160,3 +160,9 @@ class ImageDisplay(QLabel):
             moved = (last_ypos != self.view_y) or (last_xpos != self.view_x)
             if moved:
                 self.refresh_display(ImageDisplay.SLICE)
+
+    def wheelEvent(self, event):
+        if event.angleDelta().y() > 0:
+            self.increase_zoom()
+        elif event.angleDelta().y() < 0:
+            self.decrease_zoom()
