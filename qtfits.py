@@ -13,6 +13,7 @@ from imagedisplay import ImageDisplay
 from minimap import MiniMap
 from headerdisplay import HeaderDisplay
 from cursordisplay import CursorDisplay
+from menubar import MenuBar
 
 
 class QtFits(QApplication):
@@ -33,19 +34,22 @@ class QtFits(QApplication):
         self.window.setLayout(grid)
 
         self.minimap = MiniMap()
-        grid.addWidget(self.minimap, 0, 1, 1, 1)
+        grid.addWidget(self.minimap, 1, 1, 1, 1)
 
         self.main = ImageDisplay()
-        grid.addWidget(self.main, 0, 0, 3, 1)
+        grid.addWidget(self.main, 1, 0, 3, 1)
 
         self.cursordisplay = CursorDisplay()
-        grid.addWidget(self.cursordisplay, 1, 1, 1, 1)
+        grid.addWidget(self.cursordisplay, 2, 1, 1, 1)
 
         self.box = DirList()
-        grid.addWidget(self.box, 2, 1, 2, 1)
+        grid.addWidget(self.box, 3, 1, 2, 1)
 
         self.histogram = ImageHistogram()
-        grid.addWidget(self.histogram, 3, 0, 1, 1)
+        grid.addWidget(self.histogram, 4, 0, 1, 1)
+
+        self.menubar = MenuBar(self)
+        grid.addWidget(self.menubar, 0, 0, 1, 2)
 
         self.box.main = self.main
         self.box.app = self
@@ -92,10 +96,9 @@ class QtFits(QApplication):
         self.header = str(hdulist[hdu].header).strip()
 
     def open_dialog(self):
-        if QApplication.keyboardModifiers() == Qt.ControlModifier:
-            filename = QFileDialog.getOpenFileName(self, 'Open file', '.')
-            if filename[0]:
-                self.open(filename[0])
+        filename = QFileDialog.getOpenFileName(self.main, 'Open file', '.')
+        if filename[0]:
+            self.open(filename[0])
 
     def show_header(self):
         header_window = HeaderDisplay(self.header)
