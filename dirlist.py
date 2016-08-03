@@ -8,6 +8,7 @@ class DirList(QLabel):
     def __init__(self):
         super(DirList, self).__init__()
         self.main = None
+        self.app = None
         self.entries = []
         self.setFixedWidth(200)
         self.layout = QVBoxLayout(self)
@@ -16,6 +17,7 @@ class DirList(QLabel):
 
         self.list = QListWidget()
         self.layout.addWidget(self.list)
+        self.list.mouseDoubleClickEvent = self.select
 
         self.input_box = QLineEdit()
         self.layout.addWidget(self.input_box)
@@ -25,6 +27,13 @@ class DirList(QLabel):
 
         self.directory = os.getcwd()
         self.reload_entries()
+
+        self.handlers = {
+            Qt.Key_Up: self.selection_up,
+            Qt.Key_Down: self.selection_down,
+            Qt.Key_Right: self.select,
+            Qt.Key_Left: self.back,
+        }
 
     def reload_entries(self):
         entries = [entry.name for entry in os.scandir(self.directory)
@@ -47,13 +56,13 @@ class DirList(QLabel):
             index = 0
         self.list.setCurrentRow(index)
 
-    def select(self):
-        new_path = os.path.join(self.directory, str(self.currentItem().text()))
+    def select(self, *args):
+        new_path = os.path.join(self.directory, str(self.list.currentItem().text()))
         if os.path.isdir(new_path):
             self.directory = new_path
             self.reload_entries()
         elif os.path.isfile(new_path):
-            self.main.open(new_path)
+            self.app.open(new_path)
 
     def back(self):
         new_path = os.path.dirname(self.directory)
@@ -68,10 +77,8 @@ class DirList(QLabel):
             self.selection_down()
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Up:
-            self.selection_up()
-        elif event.key() == Qt.Key_Down:
-            self.selection_down()
+        if event.key() in self.handlers:
+            self.handlers[event.key()]()
         elif event.key() == Qt.Key_Escape:
             self.main.keyPressEvent(event)
         else:
