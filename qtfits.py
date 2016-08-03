@@ -1,6 +1,6 @@
+# TODO: Subclass QApplication
+# TODO: Toolbar
 # TODO: Look into plotting a histogram of arcsinh rescaled values
-# TODO: Toolbar?
-
 import argparse
 import numpy as np
 from astropy.io import fits
@@ -15,17 +15,22 @@ from headerdisplay import HeaderDisplay
 from cursordisplay import CursorDisplay
 
 
-class QtFits(QWidget):
+class QtFits(QApplication):
 
-    def __init__(self):
-        super(QtFits, self).__init__()
+    def __init__(self, filename=None):
+        super().__init__([])
+        self.setStyle('Fusion')
+        self.setApplicationName('QtFits')
+
+        self.window = QWidget()
+        self.window.resizeEvent = self.resizeEvent
+        self.window.keyPressEvent = self.keyPressEvent
 
         self.header = None
-        self.setWindowTitle('QtFits')
-        self.resize(800, 500)
+        self.window.resize(800, 500)
 
         grid = QGridLayout()
-        self.setLayout(grid)
+        self.window.setLayout(grid)
 
         self.minimap = MiniMap()
         grid.addWidget(self.minimap, 0, 1, 1, 1)
@@ -43,6 +48,7 @@ class QtFits(QWidget):
         grid.addWidget(self.histogram, 3, 0, 1, 1)
 
         self.box.main = self.main
+        self.box.app = self
 
         self.main.histogram = self.histogram
         self.histogram.main = self.main
@@ -53,20 +59,26 @@ class QtFits(QWidget):
         self.main.cursordisplay = self.cursordisplay
 
         self.handlers = {
-            Qt.Key_Escape: self.close,
+            Qt.Key_Escape: self.window.close,
             Qt.Key_Equal: self.main.increase_zoom,
             Qt.Key_Minus: self.main.decrease_zoom,
-            Qt.Key_Down: self.box.selection_down,
-            Qt.Key_Up: self.box.selection_up,
-            Qt.Key_Return: self.box.select,
-            Qt.Key_Right: self.box.select,
-            Qt.Key_Backspace: self.box.back,
-            Qt.Key_Left: self.box.back,
+            Qt.Key_Down: self.box.list.selection_down,
+            Qt.Key_Up: self.box.list.selection_up,
+            Qt.Key_Return: self.box.list.select,
+            Qt.Key_Right: self.box.list.select,
+            Qt.Key_Backspace: self.box.list.back,
+            Qt.Key_Left: self.box.list.back,
             Qt.Key_H: self.show_header,
             Qt.Key_O: self.open_dialog
         }
 
-        self.setFocusPolicy(Qt.ClickFocus)
+        self.window.setFocusPolicy(Qt.ClickFocus)
+
+        if filename is not None:
+            self.open('test.fits')
+
+        self.window.show()
+        self.exec_()
 
     def open(self, path, hdu=None):
         with open(path, 'rb') as input_file:
@@ -99,15 +111,16 @@ class QtFits(QWidget):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Display a fits file')
-    parser.add_argument('filename', help='path to or name of file to open', nargs='?')
-    args = parser.parse_args()
-    app = QApplication([])
-    app.setStyle('Fusion')
-    window = QtFits()
-    if args.filename is not None:
-        window.open(args.filename)
-    else:
-        window.main.image = np.random.rand(1024, 1024).astype(np.float32)
-    window.show()
-    app.exec_()
+    QtFits('test.fits')
+    #parser = argparse.ArgumentParser(description='Display a fits file')
+    #parser.add_argument('filename', help='path to or name of file to open', nargs='?')
+    #args = parser.parse_args()
+    #app = QApplication([])
+    #app.setStyle('Fusion')
+    #window = QtFits()
+    #if args.filename is not None:
+    #    window.open(args.filename)
+    #else:
+    #    window.main.image = np.random.rand(1024, 1024).astype(np.float32)
+    #window.show()
+    #app.exec_()

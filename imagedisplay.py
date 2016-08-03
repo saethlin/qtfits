@@ -141,13 +141,13 @@ class ImageDisplay(QLabel):
             self.last_y = event.y()
 
     def mouseMoveEvent(self, event):
-
-        cursor_y = event.y()/self.zoom + (self.view_y-self.height()/2)/self.zoom
-        cursor_x = event.x()/self.zoom + (self.view_x-self.width()/2)/self.zoom
+        cursor_x = (self.view_x-self.width()//2)/self.zoom + event.x()
+        cursor_y = (self.view_y-self.height()//2)/self.zoom + event.y()
         cursor_y = int(cursor_y)
         cursor_x = int(cursor_x)
 
-        self.cursordisplay.set(x=cursor_x, y=cursor_y, value=self.image[cursor_y, cursor_x])
+        if cursor_y < self.image.shape[0] and cursor_x < self.image.shape[1] and cursor_y >= 0 and cursor_x >= 0:
+            self.cursordisplay.set(x=cursor_x, y=cursor_y, value=self.image[cursor_y, cursor_x])
 
         if event.buttons() == Qt.LeftButton:
             last_ypos = self.view_y

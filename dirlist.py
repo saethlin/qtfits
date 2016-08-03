@@ -1,33 +1,15 @@
+# TODO: Refresh contents of entry every 0.25 seconds
 import os
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QListWidget, QLineEdit
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 
 
-class DirList(QLabel):
+class DirListEntries(QListWidget):
 
     def __init__(self):
-        super(DirList, self).__init__()
-        self.main = None
-        self.app = None
+        super().__init__()
+        self.input_box = None
         self.entries = []
-        self.setFixedWidth(200)
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
-
-        self.list = QListWidget()
-        self.layout.addWidget(self.list)
-        self.list.mouseDoubleClickEvent = self.select
-
-        self.input_box = QLineEdit()
-        self.layout.addWidget(self.input_box)
-
-        self.input_box.setPlaceholderText('Enter search term')
-        self.input_box.textChanged[str].connect(self.onChanged)
-
-        self.directory = os.getcwd()
-        self.reload_entries()
-
         self.handlers = {
             Qt.Key_Up: self.selection_up,
             Qt.Key_Down: self.selection_down,
@@ -35,29 +17,29 @@ class DirList(QLabel):
             Qt.Key_Left: self.back,
         }
 
-    def reload_entries(self):
-        entries = [entry.name for entry in os.scandir(self.directory)
-                   if (not entry.name.startswith('.')) and (entry.is_dir() or (entry.is_file() and entry.name.endswith('.fits')))]
-        self.entries = sorted(entries)
-        self.list.clear()
-        self.list.addItems(self.entries)
-        self.list.addItem('..')
-        self.list.setCurrentRow(0)
+        self.directory = os.getcwd()
+        self.reload_entries()
+
+        self.timer = QTimer(self)
+        self.timer.setInterval(250)
+        self.timer.timeout.connect(self.reload_entries)
+        self.timer.start()
 
     def selection_up(self):
-        index = self.list.currentRow() - 1
+        index = self.currentRow() - 1
         if index < 0:
-            index = len(self.list) - 1
-        self.list.setCurrentRow(index)
+            index = len(self) - 1
+        self.setCurrentRow(index)
 
     def selection_down(self):
-        index = self.list.currentRow() + 1
-        if index > len(self.list) - 1:
+        index = self.currentRow() + 1
+        if index > len(self) - 1:
             index = 0
-        self.list.setCurrentRow(index)
+        self.setCurrentRow(index)
 
-    def select(self, *args):
-        new_path = os.path.join(self.directory, str(self.list.currentItem().text()))
+    def select(self):
+        new_path = os.path.join(self.directory, str(self.currentItem().text()))
+        new_path = os.path.normpath(new_path)
         if os.path.isdir(new_path):
             self.directory = new_path
             self.reload_entries()
@@ -70,19 +52,34 @@ class DirList(QLabel):
             self.directory = new_path
             self.reload_entries()
 
+    def reload_entries(self):
+        entries = [entry.name
+                   for entry in os.scandir(self.directory)
+                   if (not entry.name.startswith('.')) and
+                      (entry.is_dir() or (entry.is_file() and entry.name.endswith('.fits')))]
+        self.entries = sorted(entries)
+        if self.input_box.displayText() == '':
+            cur_index = self.currentRow()
+            print(cur_index)
+            self.clear()
+            self.addItems(self.entries)
+            self.addItem('..')
+            self.setCurrentRow(cur_index)
+
     def wheelEvent(self, event):
         if event.angleDelta().y() > 0:
             self.selection_up()
         elif event.angleDelta().y() < 0:
             self.selection_down()
 
-    def keyPressEvent(self, event):
-        if event.key() in self.handlers:
-            self.handlers[event.key()]()
-        elif event.key() == Qt.Key_Escape:
-            self.main.keyPressEvent(event)
-        else:
-            self.input_box.keyPressEvent(event)
+
+class InputBox(QLineEdit):
+
+    def __init__(self):
+        super().__init__()
+        self.list = None
+        self.setPlaceholderText('Enter search term')
+        self.textChanged[str].connect(self.onChanged)
 
     def onChanged(self, term):
         if term == '':
@@ -94,3 +91,25 @@ class DirList(QLabel):
         self.list.addItems(search_results)
         self.list.addItem('..')
         self.list.setCurrentRow(0)
+
+
+class DirList(QLabel):
+
+    def __init__(self):
+        super().__init__()
+        self.app = None
+        self.entries = []
+        self.setFixedWidth(200)
+
+        self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
+
+        self.list = DirListEntries()
+        self.layout.addWidget(self.list)
+
+        self.input_box = QLineEdit()
+        self.layout.addWidget(self.input_box)
+
+        self.input_box.list = self.list
+        self.list.input_box = self.input_box
