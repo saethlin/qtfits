@@ -1,4 +1,3 @@
-# TODO: Refresh contents of entry every 0.25 seconds
 import os
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QListWidget, QLineEdit
 from PyQt5.QtCore import Qt, QTimer
@@ -58,9 +57,8 @@ class DirListEntries(QListWidget):
                    if (not entry.name.startswith('.')) and
                       (entry.is_dir() or (entry.is_file() and entry.name.endswith('.fits')))]
         self.entries = sorted(entries)
-        if self.input_box.displayText() == '':
+        if self.currentRow() == -1 or (self.input_box is not None and self.input_box.displayText() == ''):
             cur_index = self.currentRow()
-            print(cur_index)
             self.clear()
             self.addItems(self.entries)
             self.addItem('..')
