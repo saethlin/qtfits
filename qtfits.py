@@ -1,5 +1,4 @@
-# TODO: Subclass QApplication
-# TODO: Toolbar
+# TODO: fix margins around menubar
 # TODO: Look into plotting a histogram of arcsinh rescaled values
 import argparse
 import numpy as np
