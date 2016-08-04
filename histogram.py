@@ -61,6 +61,7 @@ class ImageHistogram(QLabel):
         histogram = coords > histogram[np.newaxis, :]
 
         self.histogram_image = (histogram * 255).astype(np.uint8)
+        self.resizeEvent(None)
 
     def draw_sliders(self):
         pixmap = QPixmap(self.qimage)

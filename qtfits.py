@@ -52,7 +52,7 @@ class QtFits(QApplication):
         grid.addWidget(self.menubar, 0, 0, 1, 2)
 
         self.box.main = self.main
-        self.box.app = self
+        self.box.list.app = self
 
         self.main.histogram = self.histogram
         self.histogram.main = self.main
@@ -72,28 +72,33 @@ class QtFits(QApplication):
             Qt.Key_Right: self.box.list.select,
             Qt.Key_Backspace: self.box.list.back,
             Qt.Key_Left: self.box.list.back,
-            Qt.Key_H: self.show_header,
-            Qt.Key_O: self.open_dialog
         }
 
         self.window.setFocusPolicy(Qt.ClickFocus)
 
         if filename is not None:
-            self.open('test.fits')
+            self.open(filename)
 
         self.window.show()
         self.exec_()
 
     def open(self, path, hdu=None):
         with open(path, 'rb') as input_file:
-            hdulist = fits.open(input_file)
+            self.hdulist = fits.open(input_file)
             if hdu is None:
                 hdu = 0
-                while hdulist[hdu].data is None:
+                while self.hdulist[hdu].data is None:
                     hdu += 1
-            image = hdulist[hdu].data.astype(np.float32)
+            image = self.hdulist[hdu].data.astype(np.float32)
         self.main.image = image
-        self.header = str(hdulist[hdu].header).strip()
+        self.header = str(self.hdulist[hdu].header).strip()
+        self.menubar.set_hdulist(self.hdulist)
+
+    def set_hdu(self, hdu):
+        image = self.hdulist[hdu].data.astype(np.float32)
+        self.main.image = image
+        self.header = str(self.hdulist[hdu].header).strip()
+        self.menubar.set_hdulist(self.hdulist)
 
     def open_dialog(self):
         filename = QFileDialog.getOpenFileName(self.main, 'Open file', '.')
@@ -114,16 +119,7 @@ class QtFits(QApplication):
 
 
 if __name__ == '__main__':
-    QtFits('test.fits')
-    #parser = argparse.ArgumentParser(description='Display a fits file')
-    #parser.add_argument('filename', help='path to or name of file to open', nargs='?')
-    #args = parser.parse_args()
-    #app = QApplication([])
-    #app.setStyle('Fusion')
-    #window = QtFits()
-    #if args.filename is not None:
-    #    window.open(args.filename)
-    #else:
-    #    window.main.image = np.random.rand(1024, 1024).astype(np.float32)
-    #window.show()
-    #app.exec_()
+    parser = argparse.ArgumentParser(description='Display a fits file')
+    parser.add_argument('filename', help='path to or name of file to open', nargs='?', default='/raid/new_data/EXPERT3.2016-07-28T16-30-57.fits')
+    args = parser.parse_args()
+    QtFits(args.filename)

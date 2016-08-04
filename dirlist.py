@@ -95,7 +95,6 @@ class DirList(QLabel):
 
     def __init__(self):
         super().__init__()
-        self.app = None
         self.entries = []
         self.setFixedWidth(200)
 
