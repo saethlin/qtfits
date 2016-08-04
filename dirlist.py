@@ -58,7 +58,7 @@ class DirListEntries(QListWidget):
         entries = [entry.name
                    for entry in os.scandir(self.directory)
                    if (not entry.name.startswith('.')) and
-                      (entry.is_dir() or (entry.is_file() and entry.name.endswith('.fits')))]
+                   (entry.is_dir() or (entry.is_file() and entry.name.endswith('.fits')))]
         self.entries = sorted(entries)
         if self.currentRow() == -1 or (self.input_box is not None and self.input_box.displayText() == ''):
             cur_index = self.currentRow()
@@ -79,22 +79,22 @@ class DirListEntries(QListWidget):
 
 class InputBox(QLineEdit):
 
-    def __init__(self, list):
+    def __init__(self, dirlist):
         super().__init__()
-        self.list = list
+        self.dirlist = dirlist
         self.setPlaceholderText('Enter search term')
         self.textChanged[str].connect(self.onChanged)
 
     def onChanged(self, term):
         if term == '':
-            search_results = self.list.entries
+            search_results = self.dirlist.entries
         else:
-            search_results = [entry for entry in self.list.entries if term.lower() in entry.lower()]
+            search_results = [entry for entry in self.dirlist.entries if term.lower() in entry.lower()]
 
-        self.list.clear()
-        self.list.addItems(search_results)
-        self.list.addItem('..')
-        self.list.setCurrentRow(0)
+        self.dirlist.clear()
+        self.dirlist.addItems(search_results)
+        self.dirlist.addItem('..')
+        self.dirlist.setCurrentRow(0)
 
 
 class DirList(QLabel):

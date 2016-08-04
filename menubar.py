@@ -25,6 +25,6 @@ class MenuBar(QMenuBar):
         hdulist_info = hdulist.info(output=False)
         hdulist_info = [[str(entry[0]) + ' ' + entry[1], len(entry[4]) == 2] for entry in hdulist_info]
 
-        for e, entry in enumerate(hdulist_info):
-            new_action = self.hdu_menu.addAction(entry[0], partial(self.master.set_hdu, hdu=e))
+        for index, entry in enumerate(hdulist_info):
+            new_action = self.hdu_menu.addAction(entry[0], partial(self.master.set_hdu, hdu=index))
             new_action.setEnabled(entry[1])

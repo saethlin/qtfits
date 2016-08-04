@@ -1,7 +1,7 @@
 import numpy as np
 from PyQt5.QtWidgets import QLabel, QSizePolicy
-from PyQt5.QtGui import QImage, QPixmap, QPainter, QPolygon
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtGui import QImage, QPixmap, QPainter
+from PyQt5.QtCore import Qt
 
 from imagedisplay import ImageDisplay
 from resources import zoom
