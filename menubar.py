@@ -11,14 +11,12 @@ class MenuBar(QMenuBar):
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
 
         file_menu = self.addMenu('File')
-        file_menu.addAction('open', master.open_dialog, 'ctrl+o')
+        file_menu.addAction('Open...', master.open_dialog, 'ctrl+o')
 
         self.hdu_menu = self.addMenu('HDUs')
 
         header_menu = self.addMenu('Header')
-        header_menu.addAction('show header', master.show_header, 'ctrl+h')
-
-        self.setStyleSheet("QToolButton:hover {background-color:green} QToolButton:!hover { background-color: lightgray }")
+        header_menu.addAction('Show header', master.show_header, 'ctrl+h')
 
     def set_hdulist(self, hdulist):
         self.hdu_menu.clear()

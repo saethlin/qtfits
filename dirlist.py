@@ -73,17 +73,17 @@ class DirListEntries(QListWidget):
 
 class InputBox(QLineEdit):
 
-    def __init__(self):
+    def __init__(self, list):
         super().__init__()
-        self.list = None
+        self.list = list
         self.setPlaceholderText('Enter search term')
         self.textChanged[str].connect(self.onChanged)
 
     def onChanged(self, term):
         if term == '':
-            search_results = self.entries
+            search_results = self.list.entries
         else:
-            search_results = [entry for entry in self.entries if term.lower() in entry.lower()]
+            search_results = [entry for entry in self.list.entries if term.lower() in entry.lower()]
 
         self.list.clear()
         self.list.addItems(search_results)
@@ -95,7 +95,6 @@ class DirList(QLabel):
 
     def __init__(self):
         super().__init__()
-        self.entries = []
         self.setFixedWidth(200)
 
         self.layout = QVBoxLayout(self)
@@ -105,7 +104,7 @@ class DirList(QLabel):
         self.list = DirListEntries()
         self.layout.addWidget(self.list)
 
-        self.input_box = QLineEdit()
+        self.input_box = InputBox(self.list)
         self.layout.addWidget(self.input_box)
 
         self.input_box.list = self.list
