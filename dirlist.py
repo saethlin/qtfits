@@ -43,6 +43,7 @@ class DirListEntries(QListWidget):
         if os.path.isdir(new_path):
             self.directory = new_path
             self.reload_entries()
+            self.setCurrentRow(0)
         elif os.path.isfile(new_path):
             self.app.open(new_path)
 
@@ -51,6 +52,7 @@ class DirListEntries(QListWidget):
         if os.path.isdir(new_path):
             self.directory = new_path
             self.reload_entries()
+            self.setCurrentRow(0)
 
     def reload_entries(self):
         entries = [entry.name
@@ -70,6 +72,9 @@ class DirListEntries(QListWidget):
             self.selection_up()
         elif event.angleDelta().y() < 0:
             self.selection_down()
+
+    def mouseDoubleClickEvent(self, QMouseEvent):
+        self.select()
 
 
 class InputBox(QLineEdit):
