@@ -1,5 +1,6 @@
 from functools import partial
 from PyQt5.QtWidgets import QMenuBar, QSizePolicy
+from PyQt5.QtGui import QFont
 
 
 class MenuBar(QMenuBar):
@@ -7,8 +8,8 @@ class MenuBar(QMenuBar):
     def __init__(self, master):
         super().__init__()
         self.master = master
-        self.setMinimumSize(1, 10)
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+        self.setFont(QFont('System', 10))
 
         file_menu = self.addMenu('File')
         file_menu.addAction('Open...', master.open_dialog, 'ctrl+o')

@@ -6,6 +6,7 @@ class CursorDisplay(QLabel):
     def __init__(self):
         super().__init__()
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+        self.setToolTip('Cursor location and image value at location')
         self.set(0, 0, 0)
 
     def set(self, x, y, value):

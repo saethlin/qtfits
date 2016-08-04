@@ -1,9 +1,8 @@
-# TODO: fix margins around menubar
 # TODO: Look into plotting a histogram of arcsinh rescaled values
 import argparse
 import numpy as np
 from astropy.io import fits
-from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication, QFileDialog
+from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication, QFileDialog, QVBoxLayout
 from PyQt5.QtCore import Qt
 
 from dirlist import DirList
@@ -19,36 +18,46 @@ class QtFits(QApplication):
 
     def __init__(self, filename=None):
         super().__init__([])
+        self.header = None
         self.setStyle('Fusion')
         self.setApplicationName('QtFits')
+
+        self.overlord = QWidget()
+        self.overlord.resize(800, 500)
+
+        overlord_layout = QVBoxLayout()
+        self.overlord.setLayout(overlord_layout)
+        overlord_layout.setContentsMargins(0, 0, 0, 0)
+        overlord_layout.setSpacing(0)
 
         self.window = QWidget()
         self.window.resizeEvent = self.resizeEvent
         self.window.keyPressEvent = self.keyPressEvent
 
-        self.header = None
-        self.window.resize(800, 500)
-
         grid = QGridLayout()
+        grid.setContentsMargins(0, 0, 0, 0)
         self.window.setLayout(grid)
 
         self.minimap = MiniMap()
-        grid.addWidget(self.minimap, 1, 1, 1, 1)
+        grid.addWidget(self.minimap, 0, 1, 1, 1)
 
         self.main = ImageDisplay()
-        grid.addWidget(self.main, 1, 0, 3, 1)
+        grid.addWidget(self.main, 0, 0, 3, 1)
 
         self.cursordisplay = CursorDisplay()
-        grid.addWidget(self.cursordisplay, 2, 1, 1, 1)
+        grid.addWidget(self.cursordisplay, 1, 1, 1, 1)
 
         self.box = DirList()
-        grid.addWidget(self.box, 3, 1, 2, 1)
+        grid.addWidget(self.box, 2, 1, 2, 1)
 
         self.histogram = ImageHistogram()
-        grid.addWidget(self.histogram, 4, 0, 1, 1)
+        grid.addWidget(self.histogram, 3, 0, 1, 1)
 
         self.menubar = MenuBar(self)
-        grid.addWidget(self.menubar, 0, 0, 1, 2)
+        overlord_layout.addWidget(self.menubar)
+        overlord_layout.addWidget(self.window)
+        #grid.addWidget(self.menubar, 0, 0, 1, 2)
+
 
         self.box.main = self.main
         self.box.list.app = self
@@ -62,7 +71,7 @@ class QtFits(QApplication):
         self.main.cursordisplay = self.cursordisplay
 
         self.handlers = {
-            Qt.Key_Escape: self.window.close,
+            Qt.Key_Escape: self.overlord.close,
             Qt.Key_Equal: self.main.increase_zoom,
             Qt.Key_Minus: self.main.decrease_zoom,
             Qt.Key_Down: self.box.list.selection_down,
@@ -78,7 +87,7 @@ class QtFits(QApplication):
         if filename is not None:
             self.open(filename)
 
-        self.window.show()
+        self.overlord.show()
         self.exec_()
 
     def open(self, path, hdu=None):

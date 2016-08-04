@@ -29,6 +29,7 @@ class ImageDisplay(QLabel):
 
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.setMouseTracking(True)
+        self.setToolTip('Current image display')
 
         self._image = np.zeros((800, 500))
 
@@ -113,7 +114,7 @@ class ImageDisplay(QLabel):
                 self.minimap.reclip(self.black, self.white)
 
             if stage >= ImageDisplay.ZOOM:
-                    self.zoomed = zoom(self.scaled, self.zoom)
+                self.zoomed = zoom(self.scaled, self.zoom)
 
             if stage >= ImageDisplay.SLICE:
                 slice_y = slice(max(0, self.view_y-self.height()//2),
@@ -124,8 +125,7 @@ class ImageDisplay(QLabel):
 
             height, width = self.sliced.shape
             image = QImage(bytes(self.sliced.data), width, height, width, QImage.Format_Grayscale8)
-            pixmap = QPixmap(image)
-            self.setPixmap(pixmap)
+            self.setPixmap(QPixmap(image))
 
             self.minimap.refresh()
 

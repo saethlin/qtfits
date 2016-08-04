@@ -19,6 +19,8 @@ class ImageHistogram(QLabel):
         self.painter = QPainter()
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
         self.setFocusPolicy(Qt.ClickFocus)
+        self.setMinimumWidth(200)
+        self.setToolTip('Current image histogram')
 
         self.timer = QTimer(self)
         self.timer.setInterval(int(1/60*1000))

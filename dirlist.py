@@ -15,6 +15,7 @@ class DirListEntries(QListWidget):
             Qt.Key_Right: self.select,
             Qt.Key_Left: self.back,
         }
+        self.setToolTip('Current directory contents')
 
         self.directory = os.getcwd()
         self.reload_entries()
