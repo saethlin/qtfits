@@ -24,6 +24,7 @@ def zoom(arr, y_zoom, x_zoom=None):
 if __name__ == '__main__':
     import time
     arr = np.empty((4096, 4096), dtype=np.uint8)
+    half_zoomed = np.empty((4096*2, 4096*2), dtype=np.uint8)
     zoomed = np.empty((4096*4, 4096*4), dtype=np.uint8)
 
     print('1 -> 2')
@@ -35,6 +36,15 @@ if __name__ == '__main__':
     new = arr.repeat(2, axis=0).repeat(2, axis=1)
     print(time.time()-start)
 
+    print('2 -> 4')
+    start = time.time()
+    new = zoom(arr, 4)
+    print(time.time()-start)
+
+    start = time.time()
+    new = half_zoomed.repeat(2, axis=0).repeat(2, axis=1)
+    print(time.time()-start)
+
     print('4 -> 8')
 
     start = time.time()
@@ -43,5 +53,4 @@ if __name__ == '__main__':
 
     start = time.time()
     new = arr.repeat(2, axis=0).repeat(2, axis=1)
-    print(new.shape)
     print(time.time()-start)
