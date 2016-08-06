@@ -21,6 +21,8 @@ class ImageDisplay(QLabel):
         self._refresh_queue = 0
         self.zoom = 1
         self._view_x = self._view_y = 0
+        self.scaled = self.zoomed = self.sliced = None
+        self.last_y = self.last_x = None
 
         self.timer = QTimer(self)
         self.timer.setInterval(int(1/60*1000))
@@ -114,7 +116,13 @@ class ImageDisplay(QLabel):
                 self.minimap.reclip(self.black, self.white)
 
             if stage >= ImageDisplay.ZOOM:
-                self.zoomed = zoom(self.scaled, self.zoom)
+                try:
+                    if stage == ImageDisplay.ZOOM and ((self.zoom * self.image.shape[0]) == self.zoomed.shape[0]//2):
+                        self.zoomed = self.zoomed[::2, ::2]
+                    else:
+                        self.zoomed = zoom(self.scaled, self.zoom)
+                except AttributeError:
+                    self.zoomed = zoom(self.scaled, self.zoom)
 
             if stage >= ImageDisplay.SLICE:
                 slice_y = slice(max(0, self.view_y-self.height()//2),
@@ -146,7 +154,7 @@ class ImageDisplay(QLabel):
         cursor_y = int(cursor_y)
         cursor_x = int(cursor_x)
 
-        if cursor_y < self.image.shape[0] and cursor_x < self.image.shape[1] and cursor_y >= 0 and cursor_x >= 0:
+        if (0 <= cursor_y < self.image.shape[0]) and (0 <= cursor_x < self.image.shape[1]):
             self.cursordisplay.set(x=cursor_x, y=cursor_y, value=self.image[cursor_y, cursor_x])
 
         if event.buttons() == Qt.LeftButton:
