@@ -1,27 +1,37 @@
 import numpy as np
+from numpy.lib.stride_tricks import as_strided
 
 
-def zoom(arr, *factors):
-    if len(factors) == 1:
-        y_zoom = factors[0]
-        x_zoom = factors[0]
-    else:
-        y_zoom = factors[0]
-        x_zoom = factors[1]
+def zoom(arr, y_zoom, x_zoom=None):
+    if x_zoom is None:
+        x_zoom = y_zoom
+
     if y_zoom == 1 and x_zoom == 1:
-        new = arr
-    elif y_zoom > 1 and x_zoom > 1:
-        factor = int(y_zoom)
-        new = np.empty(tuple(np.array(arr.shape)*factor), arr.dtype)
-        for x in range(factor):
-            for y in range(factor):
-                new[x::factor, y::factor] = arr
+        return arr
+    elif (y_zoom % 1) == 0 and (x_zoom % 1) == 0:
+        r, c = arr.shape
+        rs, cs = arr.strides
+        new = as_strided(arr, (r, y_zoom, c, x_zoom), (rs, 0, cs, 0))
+        return new.reshape(int(r * y_zoom), int(c * x_zoom))
     else:
         y = np.around(np.linspace(0, arr.shape[0]-1, arr.shape[0]*y_zoom)).astype(np.int32)
         x = np.around(np.linspace(0, arr.shape[1]-1, arr.shape[1]*x_zoom)).astype(np.int32)
         y.shape = (-1, 1)
         x.shape = (1, -1)
         coords = [y, x]
-        new = arr[coords]
+        return arr[coords]
 
-    return new
+if __name__ == '__main__':
+    import time
+    arr = np.random.rand(4096, 4096).astype(np.float32)
+    zoomed = np.random.rand(4096*8, 4096*8).astype(np.float32)
+
+    start = time.time()
+    new = zoom(arr, 8)
+    print(new.shape)
+    print(time.time()-start)
+
+    start = time.time()
+    new = zoomed[::2, ::2]
+    print(new.shape)
+    print(time.time()-start)
