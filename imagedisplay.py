@@ -43,12 +43,13 @@ class ImageDisplay(QLabel):
     @image.setter
     def image(self, new):
         self._image = new
-        self._black = np.median(new)
-        self._white = np.percentile(self._image, 99.7)
+        self._black, self._white = np.percentile(self._image, [50, 99.7])
         self.view_y = self.image.shape[0]//2
         self.view_x = self.image.shape[1]//2
+        self.zoom = 1
         self.minimap.image = new
         self.histogram.image = new
+        self.zoomed = self._image
         self.refresh_display(ImageDisplay.CLIP)
 
     @property
@@ -117,9 +118,10 @@ class ImageDisplay(QLabel):
                 self.minimap.reclip(self.black, self.white)
 
             if stage >= ImageDisplay.ZOOM:
-                if self.zoomed is not None and stage == ImageDisplay.ZOOM and (
-                        (self.zoom * self.image.shape[0]) == self.zoomed.shape[0]//2):
-                    self.zoomed = self.zoomed[::2, ::2]
+                # If no clipping was done, it's much faster to resample the previous self.zoom
+                zoom_change = self.zoom*self.image.shape[0]/self.zoomed.shape[0]
+                if stage == ImageDisplay.ZOOM and zoom_change < 1:
+                    self.zoomed = zoom(self.zoomed, zoom_change)
                 else:
                     self.zoomed = zoom(self.scaled, self.zoom)
 

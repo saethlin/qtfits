@@ -11,8 +11,10 @@ def zoom(arr, y_zoom, x_zoom=None):
     elif (y_zoom % 1) == 0 and (x_zoom % 1) == 0:
         r, c = arr.shape
         rs, cs = arr.strides
-        new = as_strided(arr, (r, y_zoom, c, x_zoom), (rs, 0, cs, 0))
+        new = as_strided(arr, (r, int(y_zoom), c, int(x_zoom)), (rs, 0, cs, 0))
         return new.reshape(int(r * y_zoom), int(c * x_zoom))
+    elif (1/y_zoom % 2) == 0 and (1/x_zoom % 2) == 0:
+        return arr[::int(1/y_zoom), ::int(1/x_zoom)]
     else:
         y = np.around(np.linspace(0, arr.shape[0]-1, arr.shape[0]*y_zoom)).astype(np.int32)
         x = np.around(np.linspace(0, arr.shape[1]-1, arr.shape[1]*x_zoom)).astype(np.int32)
@@ -24,33 +26,12 @@ def zoom(arr, y_zoom, x_zoom=None):
 if __name__ == '__main__':
     import time
     arr = np.empty((4096, 4096), dtype=np.uint8)
-    half_zoomed = np.empty((4096*2, 4096*2), dtype=np.uint8)
-    zoomed = np.empty((4096*4, 4096*4), dtype=np.uint8)
+    small = np.empty((1024, 1024), dtype=np.uint8)
 
-    print('1 -> 2')
     start = time.time()
-    new = zoom(arr, 2)
+    new = zoom(arr, 0.125)
     print(time.time()-start)
 
     start = time.time()
-    new = arr.repeat(2, axis=0).repeat(2, axis=1)
-    print(time.time()-start)
-
-    print('2 -> 4')
-    start = time.time()
-    new = zoom(arr, 4)
-    print(time.time()-start)
-
-    start = time.time()
-    new = half_zoomed.repeat(2, axis=0).repeat(2, axis=1)
-    print(time.time()-start)
-
-    print('4 -> 8')
-
-    start = time.time()
-    new = zoom(arr, 8)
-    print(time.time()-start)
-
-    start = time.time()
-    new = arr.repeat(2, axis=0).repeat(2, axis=1)
+    new2 = arr[::8, ::8]
     print(time.time()-start)
