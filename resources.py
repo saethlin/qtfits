@@ -24,14 +24,24 @@ def zoom(arr, y_zoom, x_zoom=None):
 if __name__ == '__main__':
     import time
     arr = np.empty((4096, 4096), dtype=np.uint8)
-    zoomed = np.empty((4096*8, 4096*8), dtype=np.uint8)
+    zoomed = np.empty((4096*4, 4096*4), dtype=np.uint8)
 
+    print('1 -> 2')
     start = time.time()
-    new = zoom(arr, 8)
-    print(new.shape)
+    new = zoom(arr, 2)
     print(time.time()-start)
 
     start = time.time()
-    new = zoomed[::2, ::2]
+    new = arr.repeat(2, axis=0).repeat(2, axis=1)
+    print(time.time()-start)
+
+    print('4 -> 8')
+
+    start = time.time()
+    new = zoom(arr, 8)
+    print(time.time()-start)
+
+    start = time.time()
+    new = arr.repeat(2, axis=0).repeat(2, axis=1)
     print(new.shape)
     print(time.time()-start)
