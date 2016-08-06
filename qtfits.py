@@ -129,6 +129,6 @@ class QtFits(QApplication):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Display a fits file')
     parser.add_argument('filename', help='path to or name of file to open', nargs='?',
-                        default='/raid/new_data/EXPERT3.2016-07-28T16-30-57.fits')
+                        default='test.fits')
     args = parser.parse_args()
     QtFits(args.filename)
