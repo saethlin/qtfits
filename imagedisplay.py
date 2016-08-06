@@ -19,6 +19,7 @@ class ImageDisplay(QLabel):
         self._image = None
         self._black = None
         self._white = None
+        self.slices = None, None
         self._refresh_queue = 0
         self.zoom = 1
         self._view_x = self._view_y = 0
@@ -108,7 +109,6 @@ class ImageDisplay(QLabel):
         if self.timer.remainingTime() == -1:
 
             stage = max(stage, self._refresh_queue)
-
             if stage == -1:
                 return
 
@@ -119,7 +119,8 @@ class ImageDisplay(QLabel):
 
             if stage >= ImageDisplay.ZOOM:
                 # If no clipping was done, it's much faster to resample the previous self.zoom
-                zoom_change = self.zoom*self.image.shape[0]/self.zoomed.shape[0]
+                zoom_change = self.zoom * self.image.shape[0] / self.zoomed.shape[0]
+
                 if stage == ImageDisplay.ZOOM and zoom_change < 1:
                     self.zoomed = zoom(self.zoomed, zoom_change)
                 else:
@@ -130,6 +131,7 @@ class ImageDisplay(QLabel):
                                 min(int(round(self.image.shape[0]*self.zoom)), self.view_y+self.height()//2))
                 slice_x = slice(max(0, self.view_x-self.width()//2),
                                 min(int(round(self.image.shape[1]*self.zoom)), self.view_x+self.width()//2))
+                self.slices = slice_y, slice_x
                 self.sliced = self.zoomed[slice_y, slice_x]
 
             height, width = self.sliced.shape

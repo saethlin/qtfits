@@ -1,4 +1,4 @@
-# TODO: Look into plotting a histogram of arcsinh rescaled values
+# TODO: Loading message and I/O in threads
 import argparse
 import numpy as np
 from astropy.io import fits
@@ -56,8 +56,6 @@ class QtFits(QApplication):
         self.menubar = MenuBar(self)
         overlord_layout.addWidget(self.menubar)
         overlord_layout.addWidget(self.window)
-        #grid.addWidget(self.menubar, 0, 0, 1, 2)
-
 
         self.box.main = self.main
         self.box.list.app = self
