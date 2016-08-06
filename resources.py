@@ -23,8 +23,8 @@ def zoom(arr, y_zoom, x_zoom=None):
 
 if __name__ == '__main__':
     import time
-    arr = np.random.rand(4096, 4096).astype(np.float32)
-    zoomed = np.random.rand(4096*8, 4096*8).astype(np.float32)
+    arr = np.empty((4096, 4096), dtype=np.uint8)
+    zoomed = np.empty((4096*8, 4096*8), dtype=np.uint8)
 
     start = time.time()
     new = zoom(arr, 8)

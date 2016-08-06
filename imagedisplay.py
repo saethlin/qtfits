@@ -1,3 +1,4 @@
+# TODO: Cursor display is _still_ broken
 import numpy as np
 from PyQt5.QtWidgets import QLabel, QSizePolicy
 from PyQt5.QtGui import QImage, QPixmap
@@ -116,12 +117,10 @@ class ImageDisplay(QLabel):
                 self.minimap.reclip(self.black, self.white)
 
             if stage >= ImageDisplay.ZOOM:
-                try:
-                    if stage == ImageDisplay.ZOOM and ((self.zoom * self.image.shape[0]) == self.zoomed.shape[0]//2):
-                        self.zoomed = self.zoomed[::2, ::2]
-                    else:
-                        self.zoomed = zoom(self.scaled, self.zoom)
-                except AttributeError:
+                if self.zoomed is not None and stage == ImageDisplay.ZOOM and (
+                        (self.zoom * self.image.shape[0]) == self.zoomed.shape[0]//2):
+                    self.zoomed = self.zoomed[::2, ::2]
+                else:
                     self.zoomed = zoom(self.scaled, self.zoom)
 
             if stage >= ImageDisplay.SLICE:
