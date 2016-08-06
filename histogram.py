@@ -14,8 +14,12 @@ class ImageHistogram(QLabel):
         super(ImageHistogram, self).__init__()
         self.main = None
         self._image = None
-        self.plot = None
+        self.histogram_image = None
+        self.lookup = None
         self.clicked = None
+        self.black = None
+        self.white = None
+        self.qimage = None
         self.painter = QPainter()
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
         self.setFocusPolicy(Qt.ClickFocus)
@@ -27,8 +31,6 @@ class ImageHistogram(QLabel):
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.resizer)
 
-
-
     @property
     def image(self):
         return self._image
@@ -38,29 +40,21 @@ class ImageHistogram(QLabel):
         self._image = new
         screen_width = QDesktopWidget().screenGeometry().width()
 
-        data = new.ravel()
-        self.lower_bound, self.upper_bound = np.percentile(data[::100], [0.001, 99.95])
-        self.span = self.upper_bound - self.lower_bound
-        data = data[(data >= self.lower_bound) & (data <= self.upper_bound)]
-
-        # Rescale data
-        data -= data.min()
-        data *= screen_width/data.max()
-
-        histogram = np.bincount(data.astype(int))[:-1]
-
-        # Smooth out the histogram
-        left = np.roll(histogram, -1)
-        right = np.roll(histogram, 1)
-        peak_mask = (histogram > left) & (histogram > right) & (left > 0) & (right > 0)
-        histogram[peak_mask] = ((left + right) / 2)[peak_mask]
+        histogram = np.bincount(new.ravel().astype(int))[:-1]
+        mask = histogram != 0
+        self.lookup = np.arange(new.max())[mask]
+        histogram = histogram[mask]
 
         histogram = histogram / histogram.max() * ImageHistogram.HEIGHT
+
+        histogram.shape = 1, -1
+        histogram = zoom(histogram, 1, screen_width/histogram.size)
+        self.lookup = zoom(self.lookup[np.newaxis, :], 1, screen_width/self.lookup.size)[0]
 
         # Manual plotting
         coords = np.arange(0, ImageHistogram.HEIGHT)[::-1]
         coords = np.repeat(coords[:, np.newaxis], screen_width, axis=1)
-        histogram = coords > histogram[np.newaxis, :]
+        histogram = coords > histogram
 
         self.histogram_image = (histogram * 255).astype(np.uint8)
         self.resizeEvent(None)
@@ -70,8 +64,9 @@ class ImageHistogram(QLabel):
         self.painter.begin(pixmap)
         self.painter.setPen(Qt.red)
 
-        self.black = (self.main.black - self.lower_bound) / self.span * self.width()
-        self.white = (self.main.white - self.lower_bound) / self.span * self.width()
+        # Find me the index where lookup table is closest to white and black levels
+        self.black = np.abs(self.lookup - self.main.black).argmin() * self.width()/self.lookup.size
+        self.white = np.abs(self.lookup - self.main.white).argmin() * self.width()/self.lookup.size
 
         self.painter.drawLine(self.black, 0, self.black, self.height())
         self.painter.drawLine(self.white, 0, self.white, self.height())
@@ -99,15 +94,16 @@ class ImageHistogram(QLabel):
         self.clicked = None
 
     def mouseMoveEvent(self, event):
-        if self.clicked == 'black':
-            new_black = (event.x() / self.width() * self.span) + self.lower_bound
-            new_black = max(new_black, self.lower_bound)
-            if new_black != self.main.black and new_black < self.main.white:
-                self.main.black = new_black
-                self.draw_sliders()
-        elif self.clicked == 'white':
-            new_white = (event.x() / self.width() * self.span) + self.lower_bound
-            new_white = min(new_white, self.upper_bound - self.span/self.width())
-            if new_white != self.main.white and new_white > self.main.black:
-                self.main.white = new_white
-                self.draw_sliders()
+        lookup_position = int(round(event.x()/self.width()*self.lookup.size))
+
+        if 0 < lookup_position < self.lookup.size:
+            if self.clicked == 'black':
+                new_black = self.lookup[lookup_position]
+                if new_black != self.main.black and new_black < self.main.white:
+                    self.main.black = new_black
+                    self.draw_sliders()
+            elif self.clicked == 'white':
+                new_white = self.lookup[lookup_position]
+                if new_white != self.main.white and new_white > self.main.black:
+                    self.main.white = new_white
+                    self.draw_sliders()
