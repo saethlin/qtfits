@@ -95,15 +95,12 @@ class QtFits(QApplication):
                 hdu = 0
                 while self.hdulist[hdu].data is None:
                     hdu += 1
-            image = self.hdulist[hdu].data.astype(np.float32)
-        self.main.image = image
-        self.header = str(self.hdulist[hdu].header).strip()
-        self.menubar.set_hdulist(self.hdulist)
+        self.set_hdu(hdu)
 
     def set_hdu(self, hdu):
         image = self.hdulist[hdu].data.astype(np.float32)
         self.main.image = image
-        self.header = repr(hdulist[hdu].header)
+        self.header = repr(self.hdulist[hdu].header)
         self.menubar.set_hdulist(self.hdulist)
 
     def open_dialog(self):
