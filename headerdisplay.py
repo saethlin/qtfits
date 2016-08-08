@@ -12,7 +12,7 @@ class HeaderDisplay(QDialog):
         self.resize(680, 500)
         self.setWindowTitle('Header display')
 
-        self.cards = [header[start:start+80] for start in range(0, len(header), 80)]
+        self.cards = header.split('\n')
 
         self.display = QPlainTextEdit('\n'.join(self.cards))
         self.layout.addWidget(self.display)

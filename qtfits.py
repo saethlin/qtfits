@@ -103,7 +103,7 @@ class QtFits(QApplication):
     def set_hdu(self, hdu):
         image = self.hdulist[hdu].data.astype(np.float32)
         self.main.image = image
-        self.header = str(self.hdulist[hdu].header).strip()
+        self.header = repr(hdulist[hdu].header)
         self.menubar.set_hdulist(self.hdulist)
 
     def open_dialog(self):
