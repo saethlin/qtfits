@@ -152,8 +152,8 @@ class ImageDisplay(QLabel):
             self.last_y = event.y()
 
     def mouseMoveEvent(self, event):
-        cursor_x = (self.view_x-self.width()//2)/self.zoom + event.x()
-        cursor_y = (self.view_y-self.height()//2)/self.zoom + event.y()
+        cursor_y = (self.view_y - self.height()//2 + event.y()) / self.zoom
+        cursor_x = (self.view_x - self.width()//2 + event.x()) / self.zoom
         cursor_y = int(cursor_y)
         cursor_x = int(cursor_x)
 
