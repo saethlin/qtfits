@@ -1,4 +1,7 @@
 # TODO: Loading message and I/O in threads
+# TODO: Fast initial render when reclipping or zooming in
+# TODO: Draw line across image and plot pixels it collides with
+# TODO: Select a region and show statistics
 import argparse
 import numpy as np
 from astropy.io import fits
