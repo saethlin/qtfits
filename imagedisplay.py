@@ -3,9 +3,11 @@ try:
     from PyQt5.QtWidgets import QLabel, QSizePolicy
     from PyQt5.QtGui import QImage, QPixmap
     from PyQt5.QtCore import Qt, QTimer
+    GRAYSCALE = QImage.Format_Grayscale8
 except ImportError:
     from PyQt4.QtGui import QLabel, QSizePolicy, QImage, QPixmap
     from PyQt4.QtCore import Qt, QTimer
+    GRAYSCALE = QImage.Format_Indexed8
 
 from resources import zoom
 
@@ -109,7 +111,7 @@ class ImageDisplay(QLabel):
             self.refresh_display(ImageDisplay.ZOOM)
 
     def refresh_display(self, stage=-1):
-        if self.timer.remainingTime() == -1:
+        if not self.timer.isActive() == -1:
 
             stage = max(stage, self._refresh_queue)
             if stage == -1:
@@ -138,7 +140,7 @@ class ImageDisplay(QLabel):
                 self.sliced = self.zoomed[slice_y, slice_x]
 
             height, width = self.sliced.shape
-            image = QImage(bytes(self.sliced.data), width, height, width, QImage.Format_Grayscale8)
+            image = QImage(bytes(self.sliced.data), width, height, width, GRAYSCALE)
             self.setPixmap(QPixmap(image))
 
             self.minimap.refresh()

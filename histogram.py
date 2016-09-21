@@ -3,9 +3,11 @@ try:
     from PyQt5.QtWidgets import QLabel, QDesktopWidget, QSizePolicy
     from PyQt5.QtGui import QImage, QPixmap, QPainter
     from PyQt5.QtCore import Qt, QTimer
+    GRAYSCALE = QImage.Format_Grayscale8
 except ImportError:
     from PyQt4.QtGui import QLabel, QDesktopWidget, QSizePolicy, QImage, QPixmap, QPainter
     from PyQt4.QtCore import Qt, QTimer
+    GRAYSCALE = QImage.Format_Indexed8
 
 from resources import zoom
 
@@ -78,14 +80,14 @@ class ImageHistogram(QLabel):
         self.setPixmap(pixmap)
 
     def resizeEvent(self, event):
-        if self.timer.remainingTime() == -1:
+        if not self.timer.isActive() == -1:
             self.resizer()
             self.timer.start()
 
     def resizer(self):
         resized = zoom(self.histogram_image, 1, self.width()/self.histogram_image.shape[1])
         height, width = resized.shape
-        self.qimage = QImage(bytes(resized), width, height, width, QImage.Format_Grayscale8)
+        self.qimage = QImage(bytes(resized), width, height, width, GRAYSCALE)
         self.draw_sliders()
 
     def mousePressEvent(self, event):

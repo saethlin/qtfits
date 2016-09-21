@@ -3,9 +3,11 @@ try:
     from PyQt5.QtWidgets import QLabel, QSizePolicy
     from PyQt5.QtGui import QImage, QPixmap, QPainter
     from PyQt5.QtCore import Qt
+    GRAYSCALE = QImage.Format_Grayscale8
 except ImportError:
     from PyQt4.QtGui import QLabel, QSizePolicy, QImage, QPixmap, QPainter
     from PyQt4.QtCore import Qt
+    GRAYSCALE = QImage.Format_Indexed8
 
 from imagedisplay import ImageDisplay
 from resources import zoom
@@ -38,7 +40,7 @@ class MiniMap(QLabel):
         clipped = (self.image - black).clip(0, white - black)
         scaled = (clipped / clipped.max() * 255).astype(np.uint8)
         height, width = scaled.shape
-        self.qimage = QImage(bytes(scaled.data), width, height, width, QImage.Format_Grayscale8)
+        self.qimage = QImage(bytes(scaled.data), width, height, width, GRAYSCALE)
 
     def refresh(self):
         pixmap = QPixmap(self.qimage)
