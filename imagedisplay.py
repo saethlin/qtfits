@@ -1,8 +1,11 @@
-# TODO: Cursor display is _still_ broken
 import numpy as np
-from PyQt5.QtWidgets import QLabel, QSizePolicy
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtCore import Qt, QTimer
+try:
+    from PyQt5.QtWidgets import QLabel, QSizePolicy
+    from PyQt5.QtGui import QImage, QPixmap
+    from PyQt5.QtCore import Qt, QTimer
+except ImportError:
+    from PyQt4.QtGui import QLabel, QSizePolicy, QImage, QPixmap
+    from PyQt4.QtCore import Qt, QTimer
 
 from resources import zoom
 

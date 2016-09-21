@@ -1,7 +1,11 @@
 import numpy as np
-from PyQt5.QtWidgets import QLabel, QDesktopWidget, QSizePolicy
-from PyQt5.QtGui import QImage, QPixmap, QPainter
-from PyQt5.QtCore import Qt, QTimer
+try:
+    from PyQt5.QtWidgets import QLabel, QDesktopWidget, QSizePolicy
+    from PyQt5.QtGui import QImage, QPixmap, QPainter
+    from PyQt5.QtCore import Qt, QTimer
+except ImportError:
+    from PyQt4.QtGui import QLabel, QDesktopWidget, QSizePolicy, QImage, QPixmap, QPainter
+    from PyQt4.QtCore import Qt, QTimer
 
 from resources import zoom
 

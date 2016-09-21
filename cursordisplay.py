@@ -1,4 +1,7 @@
-from PyQt5.QtWidgets import QLabel, QSizePolicy
+try:
+    from PyQt5.QtWidgets import QLabel, QSizePolicy
+except ImportError:
+    from PyQt4.QtGui import QLabel, QSizePolicy
 
 
 class CursorDisplay(QLabel):
@@ -10,4 +13,4 @@ class CursorDisplay(QLabel):
         self.set(0, 0, 0)
 
     def set(self, x, y, value):
-        self.setText('Location: {}, {}\nVaue: {}'.format(x, y, value))
+        self.setText('Location: {}, {}\nValue: {}'.format(x, y, value))

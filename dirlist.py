@@ -1,6 +1,10 @@
 import os
-from PyQt5.QtWidgets import QVBoxLayout, QLabel, QListWidget, QLineEdit
-from PyQt5.QtCore import Qt, QTimer
+try:
+    from PyQt5.QtWidgets import QVBoxLayout, QLabel, QListWidget, QLineEdit
+    from PyQt5.QtCore import Qt, QTimer
+except ImportError:
+    from PyQt4.QtGui import QVBoxLayout, QLabel, QListWidget, QLineEdit
+    from PyQt4.QtCore import Qt, QTimer
 
 
 class DirListEntries(QListWidget):

@@ -5,8 +5,12 @@
 import argparse
 import numpy as np
 from astropy.io import fits
-from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication, QFileDialog, QVBoxLayout
-from PyQt5.QtCore import Qt
+try:
+    from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication, QFileDialog, QVBoxLayout
+    from PyQt5.QtCore import Qt
+except ImportError:
+    from PyQt4.QtGui import QWidget, QGridLayout, QApplication, QFileDialog, QVBoxLayout
+    from PyQt4.QtCore import Qt
 
 from dirlist import DirList
 from histogram import ImageHistogram

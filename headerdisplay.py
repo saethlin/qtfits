@@ -1,6 +1,10 @@
-from PyQt5.QtWidgets import QPlainTextEdit, QDialog, QVBoxLayout, QLineEdit
-from PyQt5.QtGui import QFont
-from PyQt5.QtCore import Qt
+try:
+    from PyQt5.QtWidgets import QPlainTextEdit, QDialog, QVBoxLayout, QLineEdit
+    from PyQt5.QtGui import QFont
+    from PyQt5.QtCore import Qt
+except ImportError:
+    from PyQt4.QtGui import QPlainTextEdit, QDialog, QVBoxLayout, QLineEdit, QFont
+    from PyQt4.QtCore import Qt
 
 
 class HeaderDisplay(QDialog):

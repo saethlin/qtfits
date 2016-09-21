@@ -1,6 +1,9 @@
 from functools import partial
-from PyQt5.QtWidgets import QMenuBar, QSizePolicy
-from PyQt5.QtGui import QFont
+try:
+    from PyQt5.QtWidgets import QMenuBar, QSizePolicy
+    from PyQt5.QtGui import QFont
+except ImportError:
+    from PyQt4.QtGui import QMenuBar, QSizePolicy, QFont
 
 
 class MenuBar(QMenuBar):
