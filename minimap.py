@@ -71,7 +71,6 @@ class MiniMap(QLabel):
     def mousePressEvent(self, event):
         self.main.view_x = event.x()/self.conversion*self.main.zoom
         self.main.view_y = event.y()/self.conversion*self.main.zoom
-        self.main.refresh_display(ImageDisplay.SLICE)
 
     def mouseMoveEvent(self, event):
         self.mousePressEvent(event)

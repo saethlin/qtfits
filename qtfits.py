@@ -125,7 +125,7 @@ class QtFits(QApplication):
             self.handlers[event.key()]()
 
     def resizeEvent(self, event):
-        self.main.refresh_display(ImageDisplay.SLICE)
+        self.main._refresh_queue.append(self.main.reslice)
 
 
 if __name__ == '__main__':
