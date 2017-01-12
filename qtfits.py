@@ -130,7 +130,6 @@ class QtFits(QApplication):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Display a fits file')
-    parser.add_argument('filename', help='path to or name of file to open', nargs='?',
-                        default='test.fits')
+    parser.add_argument('filename', help='path to or name of file to open')
     args = parser.parse_args()
     QtFits(args.filename)
